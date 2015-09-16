@@ -5,6 +5,6 @@ jdk: oraclejdk8
 git:
     submodules: false
 
-# before_install:
-#   - echo -e "machine bitbucket.org\n  login $BB_USER\n  password $BB_PASS" >> ~/.netrc
-#   - git submodule update --init --recursive
+before_install:
+  - echo -e "machine bitbucket.org\n  login $BB_USER\n  password $BB_PASS" >> ~/.netrc
+  - git submodule update --init --recursive
