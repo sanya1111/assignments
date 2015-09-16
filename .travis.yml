@@ -2,7 +2,7 @@ language: java
 
 jdk: oraclejdk8
 
-script: "mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -source 7"
+install: "mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -source 7"
 
 git:
     submodules: false
