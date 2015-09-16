@@ -18,7 +18,7 @@ import java.util.TreeMap;
 public class StringSetImpl implements StringSet, StreamSerializable{
 	
 	private class Node{
-		private TreeMap<Character, Node> routes = new TreeMap<>();
+		private TreeMap<Character, Node> routes = new TreeMap<Character, Node>();
 		private int prefCount = 0;
 		boolean end = false;
 		
