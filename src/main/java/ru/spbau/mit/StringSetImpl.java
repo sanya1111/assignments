@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 
 public class StringSetImpl implements StringSet, StreamSerializable{
@@ -84,14 +85,14 @@ public class StringSetImpl implements StringSet, StreamSerializable{
 	}
 	
 	private Node head = new Node();
-	
+	TreeSet<String> strings = new TreeSet<String>();
 	@Override
 	public void serialize(OutputStream out) {
 		ArrayList<String> result = new ArrayList<String>();
 		head.dfs(new StringBuilder(), result);
 		
 		try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out))){
-			for(String str : result){
+			for(String str : strings){
 				writer.write(str);
 				writer.newLine();
 			}
@@ -118,69 +119,81 @@ public class StringSetImpl implements StringSet, StreamSerializable{
 		if(this.contains(element)){
 			return false;
 		}
-		Node current = head;
-		for(int i = 0; i < element.length(); i++){
-			current.incPref();
-			Character simbol = element.charAt(i);
-			if(!current.haveNext(simbol)){
-				current.push(simbol);
-			}
-			current = current.next(simbol);
-		}
-		current.incPref();
-		current.markEnd();
+		strings.add(element);
+//		Node current = head;
+//		for(int i = 0; i < element.length(); i++){
+//			current.incPref();
+//			Character simbol = element.charAt(i);
+//			if(!current.haveNext(simbol)){
+//				current.push(simbol);
+//			}
+//			current = current.next(simbol);
+//		}
+//		current.incPref();
+//		current.markEnd();
 		return true;
 	}
 
 	@Override
 	public boolean contains(String element) {
-		Node current = head;
-		for(int i = 0; i < element.length(); i++){
-			Character simbol = element.charAt(i);
-			if(!current.haveNext(simbol)){
-				return false;
-			}
-			current = current.next(simbol);
-		}
-		return current.isEnd();
+		return strings.contains(element);
+//		Node current = head;
+//		for(int i = 0; i < element.length(); i++){
+//			Character simbol = element.charAt(i);
+//			if(!current.haveNext(simbol)){
+//				return false;
+//			}
+//			current = current.next(simbol);
+//		}
+//		return current.isEnd();
 	}
 
 	@Override
 	public boolean remove(String element) {
-		if(!this.contains(element)){
-			return false;
-		}
-		Node current = head;
-		current.decPref();
-		for(int i = 0; i < element.length(); i++){
-			Character simbol = element.charAt(i);
-			Node next = current.next(simbol);
-			next.decPref();
-			if(next.getPref() == 0){
-				current.remove(simbol);
-			}
-			current = next;
-		}
-		current.markNotEnd();
-		return true;
+		return strings.remove(element);
+		
+//		if(!this.contains(element)){
+//			return false;
+//		}
+//		Node current = head;
+//		current.decPref();
+//		for(int i = 0; i < element.length(); i++){
+//			Character simbol = element.charAt(i);
+//			Node next = current.next(simbol);
+//			next.decPref();
+//			if(next.getPref() == 0){
+//				current.remove(simbol);
+//			}
+//			current = next;
+//		}
+//		current.markNotEnd();
+//		return true;
 	}
 
 	@Override
 	public int size() {
-		return head.getPref();
+		return strings.size();
+//		return head.getPref();
 	}
 
 	@Override
 	public int howManyStartsWithPrefix(String prefix) {
-		Node current = head;
-		for(int i = 0; i < prefix.length(); i++){
-			Character simbol = prefix.charAt(i);
-			if(!current.haveNext(simbol)){
-				return 0;
+		int count = 0;
+		for(String str : strings){
+			if(str.startsWith(prefix)){
+				count++;
 			}
-			current = current.next(simbol);
 		}
-		return current.getPref();
+		return count;
+//		Node current = head;
+//		for(int i = 0; i < prefix.length(); i++){
+//			Character simbol = prefix.charAt(i);
+//			if(!current.haveNext(simbol)){
+//				return 0;
+//			}
+//			current = current.next(simbol);
+//		}
+//		return current.getPref();
 	}
 
 }

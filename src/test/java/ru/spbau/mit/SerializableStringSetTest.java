@@ -52,6 +52,7 @@ public class SerializableStringSetTest {
         assertEquals(2, stringSet.size());
     }
     
+    
     @Test
     public void testSimple2(){
     	StringSet stringSet = instance();
@@ -65,6 +66,24 @@ public class SerializableStringSetTest {
         assertTrue(stringSet.add("abc"));
         assertTrue(stringSet.contains("abc"));
         assertEquals(0, stringSet.howManyStartsWithPrefix("abcadfadf"));
+    }
+    
+    @Test
+    public void testSimple3(){
+    	StringSet stringSet = instance();
+
+    	StringBuilder builder = new StringBuilder();
+    	for(int i = 0; i < 100; i++){
+    		builder.append("a");
+//    		assertTrue(stringSet.add(builder.toString()));
+    		assertFalse(stringSet.contains(builder.toString()));
+    	}
+    	for(int i = 0; i < 100; i++){
+    		assertFalse(stringSet.remove(builder.toString()));
+    		assertTrue(stringSet.add(builder.toString()));
+    		builder.deleteCharAt(builder.length() - 1);
+    	}
+    	assertEquals(100, stringSet.size());
     }
     
     
