@@ -104,6 +104,7 @@ public class StringSetImpl implements StringSet, StreamSerializable{
 	@Override
 	public void deserialize(InputStream in) {
 //		head.clean();
+		strings.clear();
 		String str;
 		try(BufferedReader reader = new BufferedReader(new InputStreamReader(in))){
 			while((str = reader.readLine()) != null){
