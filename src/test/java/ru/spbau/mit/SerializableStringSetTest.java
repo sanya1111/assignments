@@ -1,6 +1,7 @@
 package ru.spbau.mit;
 
 import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -19,6 +20,19 @@ public class SerializableStringSetTest {
         assertEquals(1, stringSet.size());
         assertEquals(1, stringSet.howManyStartsWithPrefix("abc"));
     }
+    
+    @Test
+    public void testAll() {
+    	StringSet stringSet = instance();
+    	assertTrue(stringSet.add("abc"));
+    	assertTrue(stringSet.add("bca"));
+    	assertTrue(stringSet.add("abcda"));
+    	assertEquals(3, stringSet.size());
+    	assertEquals(2, stringSet.howManyStartsWithPrefix("ab"));
+    	assertTrue(stringSet.remove("abcda"));
+    	assertTrue(stringSet.contains("abc"));
+    	assertEquals(1, stringSet.howManyStartsWithPrefix("ab"));
+    }
 
     @Test
     public void testSimpleSerialization() {
@@ -31,11 +45,11 @@ public class SerializableStringSetTest {
         ((StreamSerializable) stringSet).serialize(outputStream);
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-        StringSet newStringSet = instance();
-        ((StreamSerializable) newStringSet).deserialize(inputStream);
+        ((StreamSerializable) stringSet).deserialize(inputStream);
 
-        assertTrue(newStringSet.contains("abc"));
-        assertTrue(newStringSet.contains("cde"));
+        assertTrue(stringSet.contains("abc"));
+        assertTrue(stringSet.contains("cde"));
+        assertEquals(2, stringSet.size());
     }
 
 

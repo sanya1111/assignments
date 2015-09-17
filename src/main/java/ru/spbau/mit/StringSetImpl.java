@@ -72,6 +72,15 @@ public class StringSetImpl implements StringSet, StreamSerializable{
 				builder.deleteCharAt(builder.length() - 1);
 			}
 		}
+		
+		public void clean(){
+			prefCount = 0;
+			end = false;
+			for(Map.Entry<Character, Node> entry : routes.entrySet()){
+				entry.getValue().clean();
+			}
+			routes.clear();
+		}
 	}
 	
 	private Node head = new Node();
@@ -93,6 +102,7 @@ public class StringSetImpl implements StringSet, StreamSerializable{
 
 	@Override
 	public void deserialize(InputStream in) {
+		head.clean();
 		String str;
 		try(BufferedReader reader = new BufferedReader(new InputStreamReader(in))){
 			while((str = reader.readLine()) != null){
