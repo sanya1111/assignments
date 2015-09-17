@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -19,25 +20,26 @@ import java.util.TreeSet;
 public class StringSetImpl implements StringSet, StreamSerializable{
 	
 	private class Node{
-		private TreeMap<Character, Node> routes = new TreeMap<Character, Node>();
+		static final int ROUTES_SIZE = 200;
+		private Node []routes = new Node[ROUTES_SIZE];
 		private int prefCount = 0;
 		boolean end = false;
 		
 		public void push(Character simbol){
-			routes.put(simbol, new Node());
+			routes[simbol] = new Node();
 		}
 		
 		public void remove(Character simbol){
-			routes.remove(simbol);
+			routes[simbol] = null;
 		}
 		
 		public boolean haveNext(Character simbol){
-			return routes.containsKey(simbol);
+			return routes[simbol] != null;
 		}
 		
 		
 		public Node next(Character simbol){
-			return routes.get(simbol);
+			return routes[simbol];
 		}
 		
 		public void incPref(){
@@ -67,20 +69,27 @@ public class StringSetImpl implements StringSet, StreamSerializable{
 			if(this.isEnd()){
 				result.add(builder.toString());
 			}
-			for(Map.Entry<Character, Node> entry : routes.entrySet()){
-				builder.append(entry.getKey());
-				entry.getValue().dfs(builder, result);
-				builder.deleteCharAt(builder.length() - 1);
+			
+			for(int i = 0; i < ROUTES_SIZE; i++){
+				Node node = routes[i];
+				if(node != null){
+					builder.append((char)i);
+					node.dfs(builder, result);
+					builder.deleteCharAt(builder.length() - 1);
+				}
 			}
 		}
 		
 		public void clean(){
 			prefCount = 0;
 			end = false;
-			for(Map.Entry<Character, Node> entry : routes.entrySet()){
-				entry.getValue().clean();
+			for(int i = 0; i < ROUTES_SIZE; i++){
+				Node node = routes[i];
+				if(node != null){
+					node.clean();
+					routes[i] =  null;
+				}
 			}
-			routes.clear();
 		}
 	}
 	
