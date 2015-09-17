@@ -174,7 +174,11 @@ public class StringSetImpl implements StringSet, StreamSerializable{
 	public int howManyStartsWithPrefix(String prefix) {
 		Node current = head;
 		for(int i = 0; i < prefix.length(); i++){
-			current = current.next(prefix.charAt(i));
+			Character simbol = prefix.charAt(i);
+			if(!current.haveNext(simbol)){
+				return 0;
+			}
+			current = current.next(simbol);
 		}
 		return current.getPref();
 	}

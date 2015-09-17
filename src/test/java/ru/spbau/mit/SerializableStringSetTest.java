@@ -51,6 +51,23 @@ public class SerializableStringSetTest {
         assertTrue(stringSet.contains("cde"));
         assertEquals(2, stringSet.size());
     }
+    
+    @Test
+    public void testSimple2(){
+    	StringSet stringSet = instance();
+
+        assertTrue(stringSet.add("abcd"));
+        assertTrue(stringSet.add("abcg"));
+        assertTrue(stringSet.add("abckk"));
+        assertTrue(stringSet.add("abf"));
+        assertEquals(4, stringSet.howManyStartsWithPrefix("a"));
+        assertTrue(stringSet.remove("abckk"));
+        assertTrue(stringSet.add("abc"));
+        assertTrue(stringSet.contains("abc"));
+        assertEquals(0, stringSet.howManyStartsWithPrefix("abcadfadf"));
+    }
+    
+    
 
 
     @Test(expected=SerializationException.class)
