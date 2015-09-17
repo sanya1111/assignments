@@ -85,14 +85,13 @@ public class StringSetImpl implements StringSet, StreamSerializable{
 	}
 	
 	private Node head = new Node();
-	TreeSet<String> strings = new TreeSet<String>();
 	@Override
 	public void serialize(OutputStream out) {
-//		ArrayList<String> result = new ArrayList<String>();
-//		head.dfs(new StringBuilder(), result);
+		ArrayList<String> result = new ArrayList<String>();
+		head.dfs(new StringBuilder(), result);
 		
 		try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out))){
-			for(String str : strings){
+			for(String str : result){
 				writer.write(str);
 				writer.newLine();
 			}
@@ -103,8 +102,7 @@ public class StringSetImpl implements StringSet, StreamSerializable{
 
 	@Override
 	public void deserialize(InputStream in) {
-//		head.clean();
-		strings.clear();
+		head.clean();
 		String str;
 		try(BufferedReader reader = new BufferedReader(new InputStreamReader(in))){
 			while((str = reader.readLine()) != null){
@@ -117,84 +115,72 @@ public class StringSetImpl implements StringSet, StreamSerializable{
 
 	@Override
 	public boolean add(String element) {
-		return strings.add(element);
-//		if(this.contains(element)){
-//			return false;
-//		}
-//		Node current = head;
-//		for(int i = 0; i < element.length(); i++){
-//			current.incPref();
-//			Character simbol = element.charAt(i);
-//			if(!current.haveNext(simbol)){
-//				current.push(simbol);
-//			}
-//			current = current.next(simbol);
-//		}
-//		current.incPref();
-//		current.markEnd();
-//		return true;
+		if(this.contains(element)){
+			return false;
+		}
+		Node current = head;
+		for(int i = 0; i < element.length(); i++){
+			current.incPref();
+			Character simbol = element.charAt(i);
+			if(!current.haveNext(simbol)){
+				current.push(simbol);
+			}
+			current = current.next(simbol);
+		}
+		current.incPref();
+		current.markEnd();
+		return true;
 	}
 
 	@Override
 	public boolean contains(String element) {
-		return strings.contains(element);
-//		Node current = head;
-//		for(int i = 0; i < element.length(); i++){
-//			Character simbol = element.charAt(i);
-//			if(!current.haveNext(simbol)){
-//				return false;
-//			}
-//			current = current.next(simbol);
-//		}
-//		return current.isEnd();
+		Node current = head;
+		for(int i = 0; i < element.length(); i++){
+			Character simbol = element.charAt(i);
+			if(!current.haveNext(simbol)){
+				return false;
+			}
+			current = current.next(simbol);
+		}
+		return current.isEnd();
 	}
 
 	@Override
 	public boolean remove(String element) {
-		return strings.remove(element);
-		
-//		if(!this.contains(element)){
-//			return false;
-//		}
-//		Node current = head;
-//		current.decPref();
-//		for(int i = 0; i < element.length(); i++){
-//			Character simbol = element.charAt(i);
-//			Node next = current.next(simbol);
-//			next.decPref();
-//			if(next.getPref() == 0){
-//				current.remove(simbol);
-//			}
-//			current = next;
-//		}
-//		current.markNotEnd();
-//		return true;
+		if(!this.contains(element)){
+			return false;
+		}
+		Node current = head;
+		current.decPref();
+		for(int i = 0; i < element.length(); i++){
+			Character simbol = element.charAt(i);
+			Node next = current.next(simbol);
+			next.decPref();
+			if(next.getPref() == 0){
+				current.remove(simbol);
+			}
+			current = next;
+		}
+		current.markNotEnd();
+		return true;
 	}
 
 	@Override
 	public int size() {
-		return strings.size();
-//		return head.getPref();
+		return head.getPref();
 	}
 
 	@Override
 	public int howManyStartsWithPrefix(String prefix) {
-		int count = 0;
-		for(String str : strings){
-			if(str.startsWith(prefix)){
-				count++;
+		Node current = head;
+		for(int i = 0; i < prefix.length(); i++){
+			Character simbol = prefix.charAt(i);
+			if(!current.haveNext(simbol)){
+				return 0;
 			}
+			current = current.next(simbol);
 		}
-		return count;
-//		Node current = head;
-//		for(int i = 0; i < prefix.length(); i++){
-//			Character simbol = prefix.charAt(i);
-//			if(!current.haveNext(simbol)){
-//				return 0;
-//			}
-//			current = current.next(simbol);
-//		}
-//		return current.getPref();
+		return current.getPref();
 	}
 
 }
