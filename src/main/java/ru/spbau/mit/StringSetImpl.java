@@ -88,8 +88,8 @@ public class StringSetImpl implements StringSet, StreamSerializable{
 	TreeSet<String> strings = new TreeSet<String>();
 	@Override
 	public void serialize(OutputStream out) {
-		ArrayList<String> result = new ArrayList<String>();
-		head.dfs(new StringBuilder(), result);
+//		ArrayList<String> result = new ArrayList<String>();
+//		head.dfs(new StringBuilder(), result);
 		
 		try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out))){
 			for(String str : strings){
@@ -103,7 +103,7 @@ public class StringSetImpl implements StringSet, StreamSerializable{
 
 	@Override
 	public void deserialize(InputStream in) {
-		head.clean();
+//		head.clean();
 		String str;
 		try(BufferedReader reader = new BufferedReader(new InputStreamReader(in))){
 			while((str = reader.readLine()) != null){
@@ -116,10 +116,10 @@ public class StringSetImpl implements StringSet, StreamSerializable{
 
 	@Override
 	public boolean add(String element) {
-		if(this.contains(element)){
-			return false;
-		}
-		strings.add(element);
+		return strings.add(element);
+//		if(this.contains(element)){
+//			return false;
+//		}
 //		Node current = head;
 //		for(int i = 0; i < element.length(); i++){
 //			current.incPref();
@@ -131,7 +131,7 @@ public class StringSetImpl implements StringSet, StreamSerializable{
 //		}
 //		current.incPref();
 //		current.markEnd();
-		return true;
+//		return true;
 	}
 
 	@Override
