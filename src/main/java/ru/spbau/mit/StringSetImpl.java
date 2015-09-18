@@ -8,41 +8,42 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.function.BiConsumer;
 
 public class StringSetImpl implements StringSet, StreamSerializable {
 
     private class Node {
-        static final int ROUTES_SIZE = 200;
-        private Node[] routes = new Node[ROUTES_SIZE];
+        private static final int CHILDREN_SIZE = 200;
+        private Node[] children = new Node[CHILDREN_SIZE];
         private int prefCount = 0;
         private boolean end = false;
 
-        public void push(Character simbol) {
-            routes[simbol] = new Node();
+        private void push(char simbol) {
+            children[simbol] = new Node();
         }
 
-        public void remove(Character simbol) {
-            routes[simbol] = null;
+        private void remove(char simbol) {
+            children[simbol] = null;
         }
 
-        public boolean haveNext(Character simbol) {
-            return routes[simbol] != null;
+        public boolean haveNext(char simbol) {
+            return children[simbol] != null;
         }
 
-        public Node next(Character simbol) {
-            return routes[simbol];
+        public Node next(char simbol) {
+            return children[simbol];
         }
 
         public void incPref() {
-            this.prefCount++;
+            prefCount++;
         }
 
         public void decPref() {
-            this.prefCount--;
+            prefCount--;
         }
 
         public int getPref() {
-            return this.prefCount;
+            return prefCount;
         }
 
         public void markEnd() {
@@ -57,29 +58,18 @@ public class StringSetImpl implements StringSet, StreamSerializable {
             return end;
         }
 
-        public void dfs(StringBuilder builder, ArrayList<String> result) {
-            if (this.isEnd()) {
+        public void getSubtreeStrings(StringBuilder builder,
+                ArrayList<String> result) {
+            if (isEnd()) {
                 result.add(builder.toString());
             }
 
-            for (int i = 0; i < ROUTES_SIZE; i++) {
-                Node node = routes[i];
+            for (int i = 0; i < CHILDREN_SIZE; i++) {
+                Node node = children[i];
                 if (node != null) {
                     builder.append((char) i);
-                    node.dfs(builder, result);
+                    node.getSubtreeStrings(builder, result);
                     builder.deleteCharAt(builder.length() - 1);
-                }
-            }
-        }
-
-        public void clean() {
-            prefCount = 0;
-            end = false;
-            for (int i = 0; i < ROUTES_SIZE; i++) {
-                Node node = routes[i];
-                if (node != null) {
-                    node.clean();
-                    routes[i] = null;
                 }
             }
         }
@@ -90,7 +80,7 @@ public class StringSetImpl implements StringSet, StreamSerializable {
     @Override
     public void serialize(OutputStream out) {
         ArrayList<String> result = new ArrayList<String>();
-        head.dfs(new StringBuilder(), result);
+        head.getSubtreeStrings(new StringBuilder(), result);
 
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
                 out))) {
@@ -105,7 +95,7 @@ public class StringSetImpl implements StringSet, StreamSerializable {
 
     @Override
     public void deserialize(InputStream in) {
-        head.clean();
+        head = new Node();
         String str;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 in))) {
@@ -117,55 +107,75 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         }
     }
 
-    @Override
-    public boolean add(String element) {
-        if (this.contains(element)) {
-            return false;
-        }
+    private Node forEachNode(String element,
+            BiConsumer<Node, Character> actionFound,
+            BiConsumer<Node, Character> actionNotFound,
+            BiConsumer<Node, Character> after) {
         Node current = head;
-        for (int i = 0; i < element.length(); i++) {
-            current.incPref();
-            Character simbol = element.charAt(i);
-            if (!current.haveNext(simbol)) {
-                current.push(simbol);
+        for (char simbol : element.toCharArray()) {
+            if (current.haveNext(simbol)) {
+                actionFound.accept(current, simbol);
+            } else {
+                actionNotFound.accept(current, simbol);
             }
-            current = current.next(simbol);
+            Node next = current.next(simbol);
+            after.accept(current, simbol);
+            if(next == null){
+                return current;
+            }
+            current = next;
         }
-        current.incPref();
-        current.markEnd();
-        return true;
+        return current;
     }
 
     @Override
-    public boolean contains(String element) {
-        Node current = head;
-        for (int i = 0; i < element.length(); i++) {
-            Character simbol = element.charAt(i);
-            if (!current.haveNext(simbol)) {
-                return false;
-            }
-            current = current.next(simbol);
+    public boolean add(String element) {
+        if (contains(element)) {
+            return false;
         }
-        return current.isEnd();
+        Node tailNode = forEachNode(element, (node, simbol) -> {
+            node.incPref();
+        }, (node, simbol) -> {
+            node.incPref();
+            node.push(simbol);
+        }, (node, simbol) -> {
+        });
+        tailNode.incPref();
+        tailNode.markEnd();
+        return true;
+    }
+
+    /*
+     * WHY IN JAVA I CANT USE STATIC VARS IN METHOD?????
+     */
+    private static boolean containsResult = true;
+
+    @Override
+    public boolean contains(String element) {
+        containsResult = true;
+        Node tailNode = forEachNode(element, (node, simbol) -> {
+        }, (node, simbol) -> {
+            containsResult = false;
+        }, (node, simbol) -> {
+        });
+        return containsResult && tailNode.isEnd();
     }
 
     @Override
     public boolean remove(String element) {
-        if (!this.contains(element)) {
+        if (!contains(element)) {
             return false;
         }
-        Node current = head;
-        current.decPref();
-        for (int i = 0; i < element.length(); i++) {
-            Character simbol = element.charAt(i);
-            Node next = current.next(simbol);
-            next.decPref();
-            if (next.getPref() == 0) {
-                current.remove(simbol);
+        Node tailNode = forEachNode(element, (node, simbol) -> {
+        }, (node, simbol) -> {
+        }, (node, simbol) -> {
+            node.decPref();
+            if (node.next(simbol).getPref() == 1) {
+                node.remove(simbol);
             }
-            current = next;
-        }
-        current.markNotEnd();
+        });
+        tailNode.decPref();
+        tailNode.markNotEnd();
         return true;
     }
 
@@ -174,17 +184,20 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         return head.getPref();
     }
 
+    /*
+     * AGAIN
+     */
+    private static int prefixValid = 0;
+
     @Override
     public int howManyStartsWithPrefix(String prefix) {
-        Node current = head;
-        for (int i = 0; i < prefix.length(); i++) {
-            Character simbol = prefix.charAt(i);
-            if (!current.haveNext(simbol)) {
-                return 0;
-            }
-            current = current.next(simbol);
-        }
-        return current.getPref();
+        prefixValid = 1;
+        Node tailNode = forEachNode(prefix, (node, simbol) -> {
+        }, (node, simbol) -> {
+            prefixValid = 0;
+        }, (node, simbol) -> {
+        });
+        return tailNode.getPref() * prefixValid;
     }
 
 }
