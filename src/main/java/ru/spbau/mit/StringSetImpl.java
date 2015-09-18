@@ -14,7 +14,7 @@ public class StringSetImpl implements StringSet, StreamSerializable {
     private class Node {
         private static final int CHILDREN_SIZE = 200;
         private Node[] children = new Node[CHILDREN_SIZE];
-        private int prefCount = 0;
+        private int subTreeStringsCount = 0;
         private boolean end = false;
 
         private void push(char symbol) {
@@ -25,39 +25,39 @@ public class StringSetImpl implements StringSet, StreamSerializable {
             children[symbol] = null;
         }
 
-        public boolean hasNext(char symbol) {
+        private boolean hasNext(char symbol) {
             return children[symbol] != null;
         }
 
-        public Node next(char symbol) {
+        private Node next(char symbol) {
             return children[symbol];
         }
 
-        public void incPref() {
-            prefCount++;
+        private void incSubTreeStringsCount() {
+            subTreeStringsCount++;
         }
 
-        public void decPref() {
-            prefCount--;
+        private void decSubTreeStringsCount() {
+            subTreeStringsCount--;
         }
 
-        public int getPref() {
-            return prefCount;
+        private int getSubTreeStringsCount() {
+            return subTreeStringsCount;
         }
 
-        public void markEnd() {
+        private void markEnd() {
             end = true;
         }
 
-        public void markNotEnd() {
+        private void markNotEnd() {
             end = false;
         }
 
-        public boolean isEnd() {
+        private boolean isEnd() {
             return end;
         }
 
-        public void getSubtreeStrings(StringBuilder builder,
+        private void getSubtreeStrings(StringBuilder builder,
                 ArrayList<String> result) {
             if (isEnd()) {
                 result.add(builder.toString());
@@ -137,12 +137,12 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         Node tailNode = forEachNode(element, new BiConsumer() {
             @Override
             public void accept(Node node, char symbol) {
-                node.incPref();
+                node.incSubTreeStringsCount();
             }
         }, new BiConsumer() {
             @Override
             public void accept(Node node, char symbol) {
-                node.incPref();
+                node.incSubTreeStringsCount();
                 node.push(symbol);
             }
 
@@ -153,7 +153,7 @@ public class StringSetImpl implements StringSet, StreamSerializable {
                 // TODO Auto-generated method stub
             }
         });
-        tailNode.incPref();
+        tailNode.incSubTreeStringsCount();
         tailNode.markEnd();
         return true;
     }
@@ -210,21 +210,21 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         }, new BiConsumer() {
             @Override
             public void accept(Node node, char symbol) {
-                node.decPref();
-                if (node.next(symbol).getPref() == 1) {
+                node.decSubTreeStringsCount();
+                if (node.next(symbol).getSubTreeStringsCount() == 1) {
                     node.remove(symbol);
                 }
             }
 
         });
-        tailNode.decPref();
+        tailNode.decSubTreeStringsCount();
         tailNode.markNotEnd();
         return true;
     }
 
     @Override
     public int size() {
-        return head.getPref();
+        return head.getSubTreeStringsCount();
     }
 
     /*
@@ -252,6 +252,6 @@ public class StringSetImpl implements StringSet, StreamSerializable {
             }
 
         });
-        return tailNode.getPref() * prefixValid;
+        return tailNode.getSubTreeStringsCount() * prefixValid;
     }
 }
