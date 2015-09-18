@@ -8,9 +8,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.function.BiConsumer;
-
-import org.w3c.dom.Node;
 
 public class StringSetImpl implements StringSet, StreamSerializable {
 
@@ -20,20 +17,20 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         private int prefCount = 0;
         private boolean end = false;
 
-        private void push(char simbol) {
-            children[simbol] = new Node();
+        private void push(char symbol) {
+            children[symbol] = new Node();
         }
 
-        private void remove(char simbol) {
-            children[simbol] = null;
+        private void remove(char symbol) {
+            children[symbol] = null;
         }
 
-        public boolean haveNext(char simbol) {
-            return children[simbol] != null;
+        public boolean hasNext(char symbol) {
+            return children[symbol] != null;
         }
 
-        public Node next(char simbol) {
-            return children[simbol];
+        public Node next(char symbol) {
+            return children[symbol];
         }
 
         public void incPref() {
@@ -95,6 +92,10 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         }
     }
 
+    private interface BiConsumer {
+        void accept(Node node, char symbol);
+    }
+
     @Override
     public void deserialize(InputStream in) {
         head = new Node();
@@ -109,19 +110,17 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         }
     }
 
-    private Node forEachNode(String element,
-            BiConsumer<Node, Character> actionFound,
-            BiConsumer<Node, Character> actionNotFound,
-            BiConsumer<Node, Character> after) {
+    private Node forEachNode(String element, BiConsumer actionFound,
+            BiConsumer actionNotFound, BiConsumer after) {
         Node current = head;
-        for (char simbol : element.toCharArray()) {
-            if (current.haveNext(simbol)) {
-                actionFound.accept(current, simbol);
+        for (char symbol : element.toCharArray()) {
+            if (current.hasNext(symbol)) {
+                actionFound.accept(current, symbol);
             } else {
-                actionNotFound.accept(current, simbol);
+                actionNotFound.accept(current, symbol);
             }
-            Node next = current.next(simbol);
-            after.accept(current, simbol);
+            Node next = current.next(symbol);
+            after.accept(current, symbol);
             if (next == null) {
                 return current;
             }
@@ -135,46 +134,23 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         if (contains(element)) {
             return false;
         }
-        Node tailNode = forEachNode(element, new BiConsumer<Node, Character>() {
+        Node tailNode = forEachNode(element, new BiConsumer() {
             @Override
-            public void accept(Node node, Character simbol) {
+            public void accept(Node node, char symbol) {
                 node.incPref();
             }
-
+        }, new BiConsumer() {
             @Override
-            public BiConsumer<Node, Character> andThen(
-                    BiConsumer<? super Node, ? super Character> after) {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-        }, new BiConsumer<Node, Character>() {
-            @Override
-            public void accept(Node node, Character simbol) {
+            public void accept(Node node, char symbol) {
                 node.incPref();
-                node.push(simbol);
+                node.push(symbol);
             }
 
-            @Override
-            public BiConsumer<Node, Character> andThen(
-                    BiConsumer<? super Node, ? super Character> after) {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-        }, new BiConsumer<Node, Character>() {
+        }, new BiConsumer() {
 
             @Override
-            public void accept(Node t, Character u) {
+            public void accept(Node t, char u) {
                 // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public BiConsumer<Node, Character> andThen(
-                    BiConsumer<? super Node, ? super Character> after) {
-                // TODO Auto-generated method stub
-                return null;
             }
         });
         tailNode.incPref();
@@ -190,44 +166,23 @@ public class StringSetImpl implements StringSet, StreamSerializable {
     @Override
     public boolean contains(String element) {
         containsResult = true;
-        Node tailNode = forEachNode(element, new BiConsumer<Node, Character>() {
+        Node tailNode = forEachNode(element, new BiConsumer() {
             @Override
-            public void accept(Node node, Character simbol) {
+            public void accept(Node node, char symbol) {
             }
 
+        }, new BiConsumer() {
             @Override
-            public BiConsumer<Node, Character> andThen(
-                    BiConsumer<? super Node, ? super Character> after) {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-        }, new BiConsumer<Node, Character>() {
-            @Override
-            public void accept(Node node, Character simbol) {
+            public void accept(Node node, char symbol) {
                 containsResult = false;
             }
 
-            @Override
-            public BiConsumer<Node, Character> andThen(
-                    BiConsumer<? super Node, ? super Character> after) {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-        }, new BiConsumer<Node, Character>() {
+        }, new BiConsumer() {
 
             @Override
-            public void accept(Node t, Character u) {
+            public void accept(Node t, char u) {
                 // TODO Auto-generated method stub
 
-            }
-
-            @Override
-            public BiConsumer<Node, Character> andThen(
-                    BiConsumer<? super Node, ? super Character> after) {
-                // TODO Auto-generated method stub
-                return null;
             }
 
         });
@@ -241,46 +196,26 @@ public class StringSetImpl implements StringSet, StreamSerializable {
             return false;
         }
 
-        Node tailNode = forEachNode(element, new BiConsumer<Node, Character>() {
+        Node tailNode = forEachNode(element, new BiConsumer() {
             @Override
-            public void accept(Node node, Character simbol) {
+            public void accept(Node node, char symbol) {
             }
 
+        }, new BiConsumer() {
             @Override
-            public BiConsumer<Node, Character> andThen(
-                    BiConsumer<? super Node, ? super Character> after) {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-        }, new BiConsumer<Node, Character>() {
-            @Override
-            public void accept(Node node, Character simbol) {
+            public void accept(Node node, char symbol) {
 
             }
 
+        }, new BiConsumer() {
             @Override
-            public BiConsumer<Node, Character> andThen(
-                    BiConsumer<? super Node, ? super Character> after) {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-        }, new BiConsumer<Node, Character>() {
-            @Override
-            public void accept(Node node, Character simbol) {
+            public void accept(Node node, char symbol) {
                 node.decPref();
-                if (node.next(simbol).getPref() == 1) {
-                    node.remove(simbol);
+                if (node.next(symbol).getPref() == 1) {
+                    node.remove(symbol);
                 }
             }
 
-            @Override
-            public BiConsumer<Node, Character> andThen(
-                    BiConsumer<? super Node, ? super Character> after) {
-                // TODO Auto-generated method stub
-                return null;
-            }
         });
         tailNode.decPref();
         tailNode.markNotEnd();
@@ -300,44 +235,23 @@ public class StringSetImpl implements StringSet, StreamSerializable {
     @Override
     public int howManyStartsWithPrefix(String prefix) {
         prefixValid = 1;
-        Node tailNode = forEachNode(prefix, new BiConsumer<Node, Character>() {
+        Node tailNode = forEachNode(prefix, new BiConsumer() {
             @Override
-            public void accept(Node node, Character simbol) {
+            public void accept(Node node, char symbol) {
             }
 
+        }, new BiConsumer() {
             @Override
-            public BiConsumer<Node, Character> andThen(
-                    BiConsumer<? super Node, ? super Character> after) {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-        }, new BiConsumer<Node, Character>() {
-            @Override
-            public void accept(Node node, Character simbol) {
+            public void accept(Node node, char symbol) {
                 prefixValid = 0;
             }
 
+        }, new BiConsumer() {
             @Override
-            public BiConsumer<Node, Character> andThen(
-                    BiConsumer<? super Node, ? super Character> after) {
-                // TODO Auto-generated method stub
-                return null;
+            public void accept(Node node, char symbol) {
             }
 
-        }, new BiConsumer<Node, Character>() {
-            @Override
-            public void accept(Node node, Character simbol) {
-            }
-
-            @Override
-            public BiConsumer<Node, Character> andThen(
-                    BiConsumer<? super Node, ? super Character> after) {
-                // TODO Auto-generated method stub
-                return null;
-            }
         });
         return tailNode.getPref() * prefixValid;
     }
-
 }
