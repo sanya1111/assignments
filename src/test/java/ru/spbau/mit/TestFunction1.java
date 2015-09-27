@@ -9,22 +9,19 @@ import java.util.Collection;
 
 import org.junit.Test;
 
-
 public class TestFunction1 {
 
     @Test
     public void test() {
-        Function1<Integer, ArrayList<Integer>> func = new Function1<Integer, ArrayList<Integer>>() {
+        Function1<Integer, List<Integer>> func = new Function1<Integer, List<Integer>>() {
             @Override
-            public ArrayList<Integer> run(Integer input) {
-                return new ArrayList<Integer>(
-                        Arrays.asList(input, input, input));
+            public List<Integer> run(Integer input) {
+                return Arrays.asList(input, input, input);
 
             }
         };
         int value = 2;
-        assertTrue((new ArrayList<Integer>(Arrays.asList(value, value, value)))
-                .equals(func.run(value)));
+        assertTrue(Arrays.asList(value, value, value).equals(func.run(value)));
     }
 
     @Test
@@ -35,15 +32,22 @@ public class TestFunction1 {
                 return Arrays.asList(input, input, input);
             }
         };
-        Function1<Collection<Integer>, ArrayList<Integer>> func2 = new Function1<Collection<Integer>, ArrayList<Integer>>() {
+        Function1<Collection<Integer>, ArrayList<String>> func2 = new Function1<Collection<Integer>, ArrayList<String>>() {
             @Override
-            public ArrayList<Integer> run(Collection<Integer> input) {
-                return new ArrayList<Integer>(input);
+            public ArrayList<String> run(Collection<Integer> input) {
+                ArrayList<String> result = new ArrayList<String>();
+                for (Integer obj : input) {
+                    StringBuilder builder = new StringBuilder();
+                    for (int i = 0; i < obj; i++) {
+                        builder.append("a");
+                    }
+                    result.add(builder.toString());
+                }
+                return result;
             }
         };
-        Function1<Integer, ArrayList<Integer>> result = func1.compose(func2);
+        Function1<Integer, ArrayList<String>> result = func1.compose(func2);
         int value = 3;
-        assertTrue((new ArrayList<Integer>(Arrays.asList(value, value, value)))
-                .equals(result.run(value)));
+        assertTrue(Arrays.asList("aaa", "aaa", "aaa").equals(result.run(value)));
     }
 }

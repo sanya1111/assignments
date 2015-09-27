@@ -1,15 +1,41 @@
 package ru.spbau.mit;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.ListIterator;
+
 
 /*
  * Use Collection instead of Iterable because inner Iterator interface doen't implement write function 
  * (only remove and read)
  */
 public class Collections {
+
+    public static class CollectionsException extends Exception {
+
+        /**
+         * 
+         */
+        private static final long serialVersionUID = 1L;
+
+    }
+
+    private static <C extends Collection<?>> C createInstanceCollectionRuntime(
+            Class<C> clazz, Class<?>[] argsTypes, Object[] args)
+            throws CollectionsException {
+        C result = null;
+        try {
+            result = clazz.getConstructor(argsTypes).newInstance(args);
+        } catch (InstantiationException | IllegalAccessException
+                | IllegalArgumentException | InvocationTargetException
+                | NoSuchMethodException | SecurityException e) {
+            throw new CollectionsException();
+        }
+        return result;
+    }
+
     public static <T, R> void map(Function1<? super T, ? extends R> func,
             Iterable<T> collection, Collection<R> result) {
         for (T obj : collection) {
@@ -17,11 +43,11 @@ public class Collections {
         }
     }
 
-    public static <T, R, C extends Collection<R> > C map(
+    public static <T, R, C extends Collection<R>> C map(
             Function1<? super T, ? extends R> func, Iterable<T> collection,
-            Class<C> clazz) throws InstantiationException,
-            IllegalAccessException {
-        C result = clazz.newInstance();
+            Class<C> clazz, Class<?>[] argsTypes, Object[] args)
+            throws CollectionsException {
+        C result = createInstanceCollectionRuntime(clazz, argsTypes, args);
         map(func, collection, result);
         return result;
     }
@@ -29,7 +55,7 @@ public class Collections {
     public static <T> void filter(Predicate<? super T> predicate,
             Iterable<T> collection, Collection<T> result) {
         for (T obj : collection) {
-            if (predicate.run(obj).equals(true)) {
+            if (predicate.run(obj)) {
                 result.add(obj);
             }
         }
@@ -37,51 +63,44 @@ public class Collections {
 
     public static <T, C extends Collection<T>> C filter(
             Predicate<? super T> predicate, Iterable<T> collection,
-            Class<C> clazz) throws InstantiationException,
-            IllegalAccessException {
-        C result = clazz.newInstance();
+            Class<C> clazz, Class<?>[] argsTypes, Object[] args)
+            throws CollectionsException {
+        C result = createInstanceCollectionRuntime(clazz, argsTypes, args);
         filter(predicate, collection, result);
         return result;
     }
 
-    private static <T> void takeWhileBoolean(Predicate<? super T> predicate,
-            Iterable<T> collection, Collection<T> result, boolean bool) {
+    public static <T, C extends Collection<T>> void takeWhile(
+            Predicate<? super T> predicate, Iterable<T> collection,
+            Collection<T> result) {
         for (T obj : collection) {
-            if (!predicate.run(obj).equals(bool)) {
+            if (!predicate.run(obj)) {
                 break;
             }
             result.add(obj);
         }
     }
 
-    public static <T, C extends Collection<T>> void takeWhile(
-            Predicate<? super T> predicate, Iterable<T> collection,
-            Collection<T> result) throws InstantiationException,
-            IllegalAccessException {
-        takeWhileBoolean(predicate, collection, result, true);
-    }
-
     public static <T, C extends Collection<T>> C takeWhile(
             Predicate<? super T> predicate, Iterable<T> collection,
-            Class<C> clazz) throws InstantiationException,
-            IllegalAccessException {
-        C result = clazz.newInstance();
+            Class<C> clazz, Class<?>[] argsTypes, Object[] args)
+            throws CollectionsException {
+        C result = createInstanceCollectionRuntime(clazz, argsTypes, args);
         takeWhile(predicate, collection, result);
         return result;
     }
 
     public static <T, C extends Collection<T>> void takeUnless(
             Predicate<? super T> predicate, Iterable<T> collection,
-            Collection<T> result) throws InstantiationException,
-            IllegalAccessException {
-        takeWhileBoolean(predicate, collection, result, false);
+            Collection<T> result) {
+        takeWhile(predicate.not(), collection, result);
     }
 
     public static <T, C extends Collection<T>> C takeUnless(
             Predicate<? super T> predicate, Iterable<T> collection,
-            Class<C> clazz) throws InstantiationException,
-            IllegalAccessException {
-        C result = clazz.newInstance();
+            Class<C> clazz, Class<?>[] argsTypes, Object[] args)
+            throws CollectionsException {
+        C result = createInstanceCollectionRuntime(clazz, argsTypes, args);
         takeUnless(predicate, collection, result);
         return result;
     }

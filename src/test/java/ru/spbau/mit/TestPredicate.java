@@ -37,8 +37,8 @@ public class TestPredicate {
         assertFalse(result.run(2));
         assertTrue(result.run(16));
         assertFalse(result.run(3));
-    } 
- 
+    }
+
     @Test
     public void testOr() {
         Predicate<Integer> predicate = new Predicate<Integer>() {
@@ -50,7 +50,7 @@ public class TestPredicate {
         Predicate<Integer> predicate2 = new Predicate<Integer>() {
             @Override
             public Boolean run(Integer input) {
-                return input.intValue() % 2 == 0;
+                return input % 2 == 0;
             }
         };
         Predicate<Integer> result = predicate.or(predicate2);
@@ -58,8 +58,29 @@ public class TestPredicate {
         assertTrue(result.run(2));
         assertTrue(result.run(16));
         assertFalse(result.run(3));
-    } 
-    
+    }
+
+    @Test
+    public void testLazy() {
+        Predicate<Integer> predicate = new Predicate<Integer>() {
+            @Override
+            public Boolean run(Integer input) {
+                return input > 10;
+            }
+        };
+        Predicate<Integer> predicate2 = new Predicate<Integer>() {
+            @Override
+            public Boolean run(Integer input) {
+                assertTrue(false);
+                return true;
+            }
+        };
+        Predicate<Integer> result = predicate.and(predicate2);
+        result.run(1);
+        result = predicate.or(predicate2);
+        result.run(11);
+    }
+
     @Test
     public void testNot() {
         Predicate<Integer> predicate = new Predicate<Integer>() {
@@ -73,10 +94,10 @@ public class TestPredicate {
         assertTrue(result.run(2));
         assertTrue(result.run(10));
     }
-    
+
     @Test
-    public void testConsts(){
-        assertTrue((new Predicate.ALWAYS_TRUE<Integer>()).run(0));
-        assertFalse((new Predicate.ALWAYS_FALSE<Integer>()).run(0));
+    public void testConsts() {
+        assertTrue((Predicate.ALWAYS_TRUE).run(0));
+        assertFalse((Predicate.ALWAYS_FALSE).run(0));
     }
 }

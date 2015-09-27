@@ -1,27 +1,27 @@
 package ru.spbau.mit;
 
-public abstract class Predicate<T> extends Function1<T, Boolean>{    
+public abstract class Predicate<T> extends Function1<T, Boolean> {
     public abstract Boolean run(T input);
 
-    public Predicate<T> or(final Predicate<T> with){
+    public Predicate<T> or(final Predicate<? super T> with) {
         return new Predicate<T>() {
             @Override
             public Boolean run(T input) {
-                return with.run(input) || Predicate.this.run(input);
+                return Predicate.this.run(input) || with.run(input);
             }
         };
     }
-    
-    public Predicate<T> and(final Predicate<T> with){
+
+    public Predicate<T> and(final Predicate<? super T> with) {
         return new Predicate<T>() {
             @Override
             public Boolean run(T input) {
-                return with.run(input) && Predicate.this.run(input);
+                return Predicate.this.run(input) && with.run(input);
             }
         };
     }
-    
-    public Predicate<T> not(){
+
+    public Predicate<T> not() {
         return new Predicate<T>() {
             @Override
             public Boolean run(T input) {
@@ -29,18 +29,18 @@ public abstract class Predicate<T> extends Function1<T, Boolean>{
             }
         };
     }
-    
-    public static final class ALWAYS_TRUE<T> extends Predicate<T>{
+
+    public static final Predicate<Object> ALWAYS_TRUE = new Predicate<Object>() {
         @Override
-        public Boolean run(T input) {
+        public Boolean run(Object input) {
             return true;
         }
     };
-    
-    public static final class ALWAYS_FALSE<T> extends Predicate<T>{
+
+    public static final Predicate<Object> ALWAYS_FALSE = new Predicate<Object>() {
         @Override
-        public Boolean run(T input) {
+        public Boolean run(Object input) {
             return false;
         }
     };
-}   
+}
