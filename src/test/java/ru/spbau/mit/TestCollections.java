@@ -25,6 +25,7 @@ public class TestCollections {
         List<Integer> target = Arrays.asList(4, 5, 6, 7);
         assertEquals(target,
                 Collections.filter(predicate, a, ArrayList.class, null, null));
+        assertEquals(target, Collections.filter(predicate, a));
         ArrayList<Integer> res = new ArrayList<Integer>();
         Collections.filter(predicate, a, res);
         assertEquals(target, res);
@@ -85,6 +86,7 @@ public class TestCollections {
         List<String> target = Arrays.asList("(a)", "(aa)", "(aaa)", "(aaaa)");
         assertEquals(target,
                 Collections.map(func, a, ArrayList.class, null, null));
+        assertEquals(target, Collections.map(func, a));
         ArrayList<String> result = new ArrayList<String>();
         Collections.map(func, a, result);
         assertEquals(target, result);
@@ -104,6 +106,7 @@ public class TestCollections {
         List<Integer> target = Arrays.asList(1, 2, 3);
         assertEquals(target,
                 Collections.takeUnless(func, a, ArrayList.class, null, null));
+        assertEquals(target, Collections.takeUnless(func, a));
         ArrayList<Integer> result = new ArrayList<Integer>();
         Collections.takeUnless(func, a, result);
         assertEquals(target, result);
@@ -123,6 +126,7 @@ public class TestCollections {
         List<Integer> target = Arrays.asList(1, 2, 3);
         assertEquals(target,
                 Collections.takeWhile(func, a, ArrayList.class, null, null));
+        assertEquals(target, Collections.takeWhile(func, a));
         ArrayList<Integer> result = new ArrayList<Integer>();
         Collections.takeWhile(func, a, result);
         assertEquals(target, result);

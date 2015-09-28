@@ -50,4 +50,26 @@ public class TestFunction1 {
         int value = 3;
         assertTrue(Arrays.asList("aaa", "aaa", "aaa").equals(result.run(value)));
     }
+    
+    @Test
+    public void testRecursion(){
+        Function1<Function1<Integer, Integer>, Function1<Integer, Integer> > rec = new Function1<Function1<Integer, Integer>, Function1<Integer, Integer>>(){
+
+            @Override
+            public Function1<Integer, Integer> run(final Function1<Integer, Integer> input) {
+                return new Function1<Integer, Integer>(){
+
+                    @Override
+                    public Integer run(Integer inputValue) {
+                        if (inputValue < 2)
+                            return 1;
+                        return inputValue * input.run(inputValue - 1);
+                    }
+                    
+                };
+            }
+            
+        };
+        assertEquals(120, rec.runRecursion(5));
+    }
 }

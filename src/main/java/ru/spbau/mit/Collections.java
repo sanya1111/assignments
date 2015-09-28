@@ -51,6 +51,13 @@ public class Collections {
         map(func, collection, result);
         return result;
     }
+    
+    public static <T, R> Iterable<R> map(
+            Function1<? super T, ? extends R> func, Iterable<T> collection) {
+        ArrayList<R> result = new ArrayList<R>();
+        map(func, collection, result);
+        return result;
+    }
 
     public static <T> void filter(Predicate<? super T> predicate,
             Iterable<T> collection, Collection<T> result) {
@@ -66,6 +73,13 @@ public class Collections {
             Class<C> clazz, Class<?>[] argsTypes, Object[] args)
             throws CollectionsException {
         C result = createInstanceCollectionRuntime(clazz, argsTypes, args);
+        filter(predicate, collection, result);
+        return result;
+    }
+    
+    public static <T> Iterable<T> filter(
+            Predicate<? super T> predicate, Iterable<T> collection) {
+        ArrayList<T> result = new ArrayList<T>();
         filter(predicate, collection, result);
         return result;
     }
@@ -89,6 +103,13 @@ public class Collections {
         takeWhile(predicate, collection, result);
         return result;
     }
+    
+    public static <T> Iterable<T> takeWhile(
+            Predicate<? super T> predicate, Iterable<T> collection){
+        ArrayList<T> result = new ArrayList<T>();
+        takeWhile(predicate, collection, result);
+        return result;
+    }
 
     public static <T, C extends Collection<T>> void takeUnless(
             Predicate<? super T> predicate, Iterable<T> collection,
@@ -101,6 +122,13 @@ public class Collections {
             Class<C> clazz, Class<?>[] argsTypes, Object[] args)
             throws CollectionsException {
         C result = createInstanceCollectionRuntime(clazz, argsTypes, args);
+        takeUnless(predicate, collection, result);
+        return result;
+    }
+    
+    public static <T> Iterable<T> takeUnless(
+            Predicate<? super T> predicate, Iterable<T> collection) {
+        ArrayList<T> result = new ArrayList<T>();
         takeUnless(predicate, collection, result);
         return result;
     }
@@ -117,17 +145,24 @@ public class Collections {
     public static <L, R> R foldr(
             final Function2<? super L, ? super R, ? extends R> func,
             final R value, Iterable<L> collection) {
-        Function1<Iterator<L>, R> recursion = new Function1<Iterator<L>, R>() {
+        Function1<Function1<Iterator<L>, R>, Function1<Iterator<L>, R>  > recursion = new Function1<Function1<Iterator<L>, R>, Function1<Iterator<L>, R>  >(){
+
             @Override
-            public R run(Iterator<L> inputFirst) {
-                if (!inputFirst.hasNext()) {
-                    return value;
-                }
-                L next = inputFirst.next();
-                return func.run(next, run(inputFirst));
+            public Function1<Iterator<L>, R> run(final Function1<Iterator<L>, R> input) {
+                return new Function1<Iterator<L>, R>() {
+                    @Override
+                    public R run(Iterator<L> inputFirst) {
+                        if (!inputFirst.hasNext()) {
+                            return value;
+                        }
+                        L next = inputFirst.next();
+                        return func.run(next, input.run(inputFirst));
+                    }
+                };
             }
+            
         };
-        return recursion.run(collection.iterator());
+        return recursion.runRecursion(collection.iterator());
     }
 
     public static <L, R> R foldrNotRecursive(
