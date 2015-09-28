@@ -1,9 +1,5 @@
 package ru.spbau.mit;
 
-//interface Function{
-//    public abstract Object run(Object input);
-//};
-
 public abstract class Function1<T, R> {
     public abstract R run(T input);
 

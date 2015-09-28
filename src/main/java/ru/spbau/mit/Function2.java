@@ -37,5 +37,5 @@ public abstract class Function2<T, T2, R> {
                 return Function2.this.bind1(input);
             }
         };
-    }    
+    }
 }
