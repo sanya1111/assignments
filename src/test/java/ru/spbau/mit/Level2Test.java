@@ -88,7 +88,7 @@ public class Level2Test extends TestsBase {
         Set<Integer> testSet = buildSet();
         Set<Integer> realSet = new TreeSet<>();
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1000; i++) {
             int element = random.nextInt(123456);
             assertEquals(realSet.add(element), testSet.add(element));
         }
