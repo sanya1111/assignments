@@ -3,10 +3,6 @@ package ru.spbau.mit;
 import org.junit.Assert;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
-import java.util.function.ToIntFunction;
-import java.util.function.ToLongFunction;
 
 public abstract class TestsBase extends Assert {
 
