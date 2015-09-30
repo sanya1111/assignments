@@ -153,42 +153,6 @@ public class TreeSetImpl<E> extends AbstractSet<E> {
             }
         }
 
-        @Override
-        public void forEachRemaining(Consumer<? super E> action) {
-            // TODO Auto-generated method stub
-
-        }
-
-    }
-
-    @Override
-    public Spliterator<E> spliterator() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public boolean removeIf(Predicate<? super E> filter) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public Stream<E> stream() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Stream<E> parallelStream() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void forEach(Consumer<? super E> action) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
