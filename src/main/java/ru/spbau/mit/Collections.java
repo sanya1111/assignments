@@ -80,7 +80,7 @@ public class Collections {
     public static <L, R> R foldr(
             final Function2<? super L, ? super R, ? extends R> func,
             final R value, Iterable<L> collection) {
-        Function1<Function1<Iterator<L>, R>, Function1<Iterator<L>, R>> recursion = new Function1<Function1<Iterator<L>, R>, Function1<Iterator<L>, R>>() {
+        return Function1.runRecursion(new Function1<Function1<Iterator<L>, R>, Function1<Iterator<L>, R>>() {
 
             @Override
             public Function1<Iterator<L>, R> run(
@@ -97,8 +97,7 @@ public class Collections {
                 };
             }
 
-        };
-        return Function1.runRecursion(recursion, collection.iterator());
+        }, collection.iterator());
     }
 
     public static <L, R> R foldrNotRecursive(

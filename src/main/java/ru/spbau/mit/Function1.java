@@ -23,13 +23,12 @@ public abstract class Function1<T, R> {
      */
     
     public static <T2, R2> Function1<T2, R2> getYKomb(final Function1<Function1<T2, R2>, Function1<T2, R2> > wrapper) {
-        Function1Itself<Function1<T2, R2> > func = new Function1Itself<Function1<T2, R2>>() {
+        return (new Function1Itself<Function1<T2, R2>>() {
             @Override
             public Function1<T2, R2> run(Function1Itself<Function1<T2, R2>> input) {
                 return input.run(input);
             }
-        };
-        return func.run(new Function1Itself<Function1<T2, R2> >() {
+        }).run(new Function1Itself<Function1<T2, R2> >() {
             @Override
             public Function1<T2, R2> run(final Function1Itself<Function1<T2, R2>> input) {
                 return wrapper.run(new Function1<T2, R2>() {
