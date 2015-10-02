@@ -71,6 +71,6 @@ public class TestFunction1 {
             }
 
         };
-        assertEquals(120, rec.runRecursion(5));
+        assertTrue(Function1.runRecursion(rec, 5).equals(120));
     }
 }

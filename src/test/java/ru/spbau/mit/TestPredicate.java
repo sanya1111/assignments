@@ -71,7 +71,7 @@ public class TestPredicate {
         Predicate<Integer> predicate2 = new Predicate<Integer>() {
             @Override
             public Boolean run(Integer input) {
-                assertTrue(false);
+                fail();
                 return true;
             }
         };

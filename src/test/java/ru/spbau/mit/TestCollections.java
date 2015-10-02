@@ -8,13 +8,10 @@ import java.util.List;
 
 import org.junit.Test;
 
-import ru.spbau.mit.Collections.CollectionsException;
-
 public class TestCollections {
 
-    @SuppressWarnings("unchecked")
     @Test
-    public void testFilter() throws CollectionsException {
+    public void testFilter() {
         List<Integer> a = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
         Predicate<Integer> predicate = new Predicate<Integer>() {
             @Override
@@ -23,8 +20,6 @@ public class TestCollections {
             }
         };
         List<Integer> target = Arrays.asList(4, 5, 6, 7);
-        assertEquals(target,
-                Collections.filter(predicate, a, ArrayList.class, null, null));
         assertEquals(target, Collections.filter(predicate, a));
         ArrayList<Integer> res = new ArrayList<Integer>();
         Collections.filter(predicate, a, res);
@@ -67,9 +62,8 @@ public class TestCollections {
                 Collections.foldrNotRecursive(func, "BEGINS ", a));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    public void testMap() throws CollectionsException {
+    public void testMap() {
         List<Integer> a = Arrays.asList(1, 2, 3, 4);
         Function1<Integer, String> func = new Function1<Integer, String>() {
 
@@ -84,17 +78,14 @@ public class TestCollections {
             }
         };
         List<String> target = Arrays.asList("(a)", "(aa)", "(aaa)", "(aaaa)");
-        assertEquals(target,
-                Collections.map(func, a, ArrayList.class, null, null));
         assertEquals(target, Collections.map(func, a));
         ArrayList<String> result = new ArrayList<String>();
         Collections.map(func, a, result);
         assertEquals(target, result);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    public void testUnless() throws CollectionsException {
+    public void testUnless() {
         List<Integer> a = Arrays.asList(1, 2, 3, 4);
         Predicate<Integer> func = new Predicate<Integer>() {
 
@@ -104,17 +95,14 @@ public class TestCollections {
             }
         };
         List<Integer> target = Arrays.asList(1, 2, 3);
-        assertEquals(target,
-                Collections.takeUnless(func, a, ArrayList.class, null, null));
         assertEquals(target, Collections.takeUnless(func, a));
         ArrayList<Integer> result = new ArrayList<Integer>();
         Collections.takeUnless(func, a, result);
         assertEquals(target, result);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    public void testWhile() throws CollectionsException {
+    public void testWhile() {
         List<Integer> a = Arrays.asList(1, 2, 3, 4);
         Predicate<Integer> func = new Predicate<Integer>() {
 
@@ -124,8 +112,6 @@ public class TestCollections {
             }
         };
         List<Integer> target = Arrays.asList(1, 2, 3);
-        assertEquals(target,
-                Collections.takeWhile(func, a, ArrayList.class, null, null));
         assertEquals(target, Collections.takeWhile(func, a));
         ArrayList<Integer> result = new ArrayList<Integer>();
         Collections.takeWhile(func, a, result);
