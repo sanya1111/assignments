@@ -88,6 +88,13 @@ public class GameServerImpl implements GameServer {
         public Connection getConnection() {
             return connection;
         }
+        
+        private void finishTask(Task task){
+            synchronized (task) {
+                task.setFinished();
+                task.notify();
+            }
+        }
 
         public ClientConnection(Connection connection, String id) {
             this.connection = connection;
@@ -122,8 +129,7 @@ public class GameServerImpl implements GameServer {
                 case RECEIVE_LOOP_TASK:
                     runReceiveLoop(task);
                 }
-                task.setFinished();
-                task.notify();
+                finishTask(task);
             }
         }
         
@@ -166,10 +172,7 @@ public class GameServerImpl implements GameServer {
                 }
             }
             for(Task task : pendingTasks){
-                synchronized (task) {
-                    task.setFinished();
-                    task.notify();
-                }
+                finishTask(task);
             }
         }
         
