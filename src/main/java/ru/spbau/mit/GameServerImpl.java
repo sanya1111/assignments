@@ -175,10 +175,8 @@ public class GameServerImpl implements GameServer {
         
         public void send(String msg){
             synchronized (connection) {
-                if(!connection.isClosed()){
-                    pendingTasks.add(new Task(ClientConnectionTaskType.SEND_TASK, msg));
-                    connection.notifyAll();
-                }
+                pendingTasks.add(new Task(ClientConnectionTaskType.SEND_TASK, msg));
+                connection.notifyAll();
             }
         }
         
@@ -188,19 +186,15 @@ public class GameServerImpl implements GameServer {
         
         private void receive(Task task){
             synchronized (connection) {
-                if(!connection.isClosed()){
-                    pendingTasks.add(task);
-                    connection.notifyAll();
-                }
+                pendingTasks.add(task);
+                connection.notifyAll();
             }
         }
         
         public void receiveLoop(long timeout){
             synchronized (connection) {
-                if(!connection.isClosed()){
-                    pendingTasks.add(new Task(ClientConnectionTaskType.RECEIVE_LOOP_TASK, String.valueOf(timeout)));
-                    connection.notifyAll();
-                }
+                pendingTasks.add(new Task(ClientConnectionTaskType.RECEIVE_LOOP_TASK, String.valueOf(timeout)));
+                connection.notifyAll();
             }
         }
     }
