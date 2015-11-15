@@ -136,7 +136,7 @@ public class GameServerImpl implements GameServer {
         
         
         private void tasksOperations(){
-            while(pendingTasks.size() > 0){
+            while(pendingTasks.size() > 0 && !connection.isClosed()){
                 int id = 0;
                 Task last = pendingTasks.get(id);
                 pendingTasks.remove(id);
@@ -154,22 +154,31 @@ public class GameServerImpl implements GameServer {
             synchronized (connection) {
                 init();
                 while(!connection.isClosed()){
-                    tasksOperations();
-                    try {
-                        connection.wait();
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                    if(pendingTasks.size() == 0){
+                        try {
+                            connection.wait();
+                        } catch (InterruptedException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
                     }
+                    tasksOperations();
                 }
-                tasksOperations();
+            }
+            for(Task task : pendingTasks){
+                synchronized (task) {
+                    task.setFinished();
+                    task.notify();
+                }
             }
         }
         
         public void send(String msg){
             synchronized (connection) {
-                pendingTasks.add(new Task(ClientConnectionTaskType.SEND_TASK, msg));
-                connection.notifyAll();
+                if(!connection.isClosed()){
+                    pendingTasks.add(new Task(ClientConnectionTaskType.SEND_TASK, msg));
+                    connection.notifyAll();
+                }
             }
         }
         
@@ -179,15 +188,19 @@ public class GameServerImpl implements GameServer {
         
         private void receive(Task task){
             synchronized (connection) {
-                pendingTasks.add(task);
-                connection.notifyAll();
+                if(!connection.isClosed()){
+                    pendingTasks.add(task);
+                    connection.notifyAll();
+                }
             }
         }
         
         public void receiveLoop(long timeout){
             synchronized (connection) {
-                pendingTasks.add(new Task(ClientConnectionTaskType.RECEIVE_LOOP_TASK, String.valueOf(timeout)));
-                connection.notifyAll();
+                if(!connection.isClosed()){
+                    pendingTasks.add(new Task(ClientConnectionTaskType.RECEIVE_LOOP_TASK, String.valueOf(timeout)));
+                    connection.notifyAll();
+                }
             }
         }
     }

@@ -154,10 +154,7 @@ public class TestQuizGame extends Assert {
         }
 
         private String doReceive() {
-//            checkNotDone();
-            if(isDone()){
-                return null;
-            }
+            checkNotDone();
             ScriptItem scriptItem = sequence.get(currentIndex);
             String msgToReturn = scriptItem.request;
 
@@ -181,7 +178,6 @@ public class TestQuizGame extends Assert {
             currentIndex++;
             if (isDone()) {
                 close();
-
                 synchronized (this) {
                     notifyAll();
                 }
