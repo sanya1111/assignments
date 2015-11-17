@@ -244,7 +244,7 @@ public class GameServerImpl implements GameServer {
     }
 
     @Override
-    public synchronized void broadcast(final String message) {
+    public void broadcast(final String message) {
         for(int i = 0; i < clientsPool.size(); i++){
             if(!clientsPool.get(i).getConnection().isClosed()){
                 sendTo(String.valueOf(i), message);
@@ -253,7 +253,7 @@ public class GameServerImpl implements GameServer {
     }
 
     @Override
-    public synchronized void sendTo(String id, String message) {
+    public void sendTo(String id, String message) {
         clientsPool.get(Integer.parseInt(id)).send(message);
     }
 }
