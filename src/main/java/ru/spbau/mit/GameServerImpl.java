@@ -237,7 +237,9 @@ public class GameServerImpl implements GameServer {
         ClientConnection client = new ClientConnection(connection, id);
         clientsPool.add(client);
         (new Thread(client)).start();
-        client.send(id);
+        synchronized (connection) {
+            connection.send(id);
+        }
         client.receiveLoop(DEFAULT_TIMEOUT);
     }
 
