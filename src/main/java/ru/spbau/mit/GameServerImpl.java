@@ -202,7 +202,7 @@ public class GameServerImpl implements GameServer {
         }
     }
     
-    private Game plugin = null;
+    private final Game plugin ;
     private List<ClientConnection> clientsPool = Collections.synchronizedList(new ArrayList<ClientConnection>());
     
     private String getSetterName(String key){
@@ -214,7 +214,7 @@ public class GameServerImpl implements GameServer {
     }
     
     public GameServerImpl(String gameClassName, Properties properties) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {
-        plugin = (Game) Class.forName(gameClassName).getConstructor(GameServer.class).newInstance(this);
+        this.plugin = (Game) Class.forName(gameClassName).getConstructor(GameServer.class).newInstance(this);
         for(String key : properties.stringPropertyNames()){
             String value = properties.getProperty(key);
             try{
@@ -244,7 +244,7 @@ public class GameServerImpl implements GameServer {
     }
 
     @Override
-    public void broadcast(final String message) {
+    public synchronized void broadcast(final String message) {
         for(int i = 0; i < clientsPool.size(); i++){
             if(!clientsPool.get(i).getConnection().isClosed()){
                 sendTo(String.valueOf(i), message);
@@ -253,7 +253,7 @@ public class GameServerImpl implements GameServer {
     }
 
     @Override
-    public void sendTo(String id, String message) {
+    public synchronized void sendTo(String id, String message) {
         clientsPool.get(Integer.parseInt(id)).send(message);
     }
 }

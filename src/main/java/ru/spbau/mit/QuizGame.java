@@ -142,12 +142,20 @@ public class QuizGame implements Game {
         }
     }
     
+    private void stopHintThread(){
+        if(hrunnable != null){
+            hrunnable.off();
+        }
+        hrunnable = null;
+    }
+    
     private synchronized void startGame(){
         state = State.RUNNING;
         nextRound();
     }
     
     private synchronized void stopGame(String id){
+        stopHintThread();
         state = State.STOPPED;
         server.broadcast("Game has been stopped by " + id);
     }
@@ -157,9 +165,7 @@ public class QuizGame implements Game {
     }
     
     private synchronized void nextRound(){
-        if(hrunnable != null){
-            hrunnable.off();
-        }
+        stopHintThread();
         quizIndex = (quizIndex + 1) % quiz.size();
         letterIndex = 0;
         publishQuestion();
