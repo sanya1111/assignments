@@ -115,9 +115,14 @@ public class GameServerImpl implements GameServer {
 
     @Override
     public void broadcast(final String message) {
-        for (int i = 0; i < clientsPool.size(); i++) {
-                sendTo(String.valueOf(i), message);
-        }
+        (new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < clientsPool.size(); i++) {
+                    sendTo(String.valueOf(i), message);
+                }
+            }
+        })).start();
     }
 
     @Override
