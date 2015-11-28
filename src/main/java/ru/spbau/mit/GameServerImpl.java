@@ -15,7 +15,7 @@ public class GameServerImpl implements GameServer {
         private final Connection connection;
         private final String id;
 
-        private final int DEFAULT_RECEIVE_TIMEOUT = 2;
+        private final static int DEFAULT_RECEIVE_TIMEOUT = 2;
 
         public ClientConnection(Connection connection, String id) {
             this.connection = connection;
