@@ -2,81 +2,17 @@ package ru.spbau.mit;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 
 
 
 public class GameServerImpl implements GameServer {
-    private enum ClientConnectionTaskType{
-        SEND_TASK, 
-        RECEIVE_TASK,
-        RECEIVE_LOOP_TASK,
-    }
-    
     private class ClientConnection implements Runnable{
-        private class Task{
-            private volatile boolean finished = false;
-            //modificated at one thread and THAN pushed to another
-            private ClientConnectionTaskType type;
-            //modificated once
-            private final String param;
-            //
-            
-            public ClientConnectionTaskType getType() {
-                return type;
-            }
-
-            public String getParam() {
-                return param;
-            }
-           
-            public Task(ClientConnectionTaskType type,  String params) {
-                super();
-                this.type = type;
-                this.param = params;
-            }
-            
-            public void setFinished(){
-                finished = true;
-            }
-            
-            public void setStart(){
-                finished = false;
-            }
-            
-            public boolean isFinished(){
-                return finished;
-            }
-        }
-        
-        private class ReceiveLoopRunnable implements Runnable{
-            //using at one thread
-            private Task receiveTask;
-            //
-            public ReceiveLoopRunnable(Task task) {
-                this.receiveTask = task;
-                receiveTask.type = ClientConnectionTaskType.RECEIVE_TASK;
-            }
-            
-            @Override
-            public void run() {
-                while(!connection.isClosed()){
-                    receiveTask.setStart();
-                    receive(receiveTask);
-                    synchronized (receiveTask) {
-                        try {
-                            while(!receiveTask.isFinished()){
-                                receiveTask.wait();
-                            }
-                        } catch (InterruptedException e) {
-                        }
-                    }
-                }
-            }
-        }
-        
-        private List<Task> pendingTasks = Collections.synchronizedList(new ArrayList<Task>());
+        private List<String> pendingMessages = Collections.synchronizedList(new ArrayList<String>());
         //
         //modificated once
         private final Connection connection;
@@ -89,13 +25,6 @@ public class GameServerImpl implements GameServer {
             return connection;
         }
         
-        private void finishTask(Task task){
-            synchronized (task) {
-                task.setFinished();
-                task.notify();
-            }
-        }
-
         public ClientConnection(Connection connection, String id) {
             this.connection = connection;
             this.id = id;
@@ -142,10 +71,10 @@ public class GameServerImpl implements GameServer {
         
         
         private void tasksOperations(){
-            while(pendingTasks.size() > 0 && !connection.isClosed()){
+            while(pendingMessages.size() > 0 && !connection.isClosed()){
                 int id = 0;
-                Task last = pendingTasks.get(id);
-                pendingTasks.remove(id);
+                Task last = pendingMessages.get(id);
+                pendingMessages.remove(id);
                 runTask(last);
             }
         }
@@ -160,7 +89,7 @@ public class GameServerImpl implements GameServer {
             synchronized (connection) {
                 init();
                 while(!connection.isClosed()){
-                    if(pendingTasks.size() == 0){
+                    if(pendingMessages.size() == 0){
                         try {
                             connection.wait();
                         } catch (InterruptedException e) {
@@ -171,14 +100,14 @@ public class GameServerImpl implements GameServer {
                     tasksOperations();
                 }
             }
-            for(Task task : pendingTasks){
+            for(Task task : pendingMessages){
                 finishTask(task);
             }
         }
         
         public void send(String msg){
             synchronized (connection) {
-                pendingTasks.add(new Task(ClientConnectionTaskType.SEND_TASK, msg));
+                pendingMessages.add(new Task(ClientConnectionTaskType.SEND_TASK, msg));
                 connection.notifyAll();
             }
         }
@@ -189,14 +118,14 @@ public class GameServerImpl implements GameServer {
         
         private void receive(Task task){
             synchronized (connection) {
-                pendingTasks.add(task);
+                pendingMessages.add(task);
                 connection.notifyAll();
             }
         }
         
         public void receiveLoop(long timeout){
             synchronized (connection) {
-                pendingTasks.add(new Task(ClientConnectionTaskType.RECEIVE_LOOP_TASK, String.valueOf(timeout)));
+                pendingMessages.add(new Task(ClientConnectionTaskType.RECEIVE_LOOP_TASK, String.valueOf(timeout)));
                 connection.notifyAll();
             }
         }
@@ -233,14 +162,21 @@ public class GameServerImpl implements GameServer {
     
     @Override
     public void accept(final Connection connection) {
-        String id = String.valueOf(clientsPool.size()); 
-        ClientConnection client = new ClientConnection(connection, id);
-        clientsPool.add(client);
-        (new Thread(client)).start();
-        synchronized (connection) {
-            connection.send(id);
-        }
-        client.receiveLoop(DEFAULT_TIMEOUT);
+        (new Thread(new Runnable() {
+            
+            @Override
+            public void run() {
+                synchronized (connection) {
+                    String id = String.valueOf(clientsPool.size()); 
+                    ClientConnection client = new ClientConnection(connection, id);
+                    clientsPool.add(client);
+                    (new Thread(client)).start();
+                    connection.send(id);
+                    client.receiveLoop(DEFAULT_TIMEOUT);
+                }
+            }
+        })).start();
+      
     }
 
     @Override
