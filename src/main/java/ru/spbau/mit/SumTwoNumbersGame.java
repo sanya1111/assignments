@@ -2,54 +2,61 @@ package ru.spbau.mit;
 
 import java.util.*;
 
-
 public class SumTwoNumbersGame implements Game {
-    
-    private class State{
-        private int a, b;
 
-        public int getA() {
-            return a;
-        }
-
-        public int getB() {
-            return b;
-        }
+    private class State {
+        private int a, b, result;
 
         public State(int a, int b) {
             super();
             this.a = a;
             this.b = b;
+            this.result = a + b;
         }
-        
+
+        public int getResult() {
+            return result;
+        }
+
         @Override
         public String toString() {
             return String.valueOf(a) + " " + String.valueOf(b);
         }
     }
 
-    private GameServer server = null;
-    private Random random = new Random(42);
-    private Map<String, State> playerStates = Collections.synchronizedMap(new HashMap<String , State>());
-    
+    private final GameServer server;
+    private final Random random = new Random(42);
+    private volatile State currentState;
+
+    private static final int MAX_VALUE_BOUND = 100;
+
+    private void genState() {
+        currentState = new State(random.nextInt(MAX_VALUE_BOUND),
+                random.nextInt(MAX_VALUE_BOUND));
+    }
+
+    private void newRound() {
+        genState();
+        server.broadcast(currentState.toString());
+    }
+
     public SumTwoNumbersGame(GameServer server) {
         this.server = server;
+        genState();
     }
 
     @Override
-    public void onPlayerConnected(String id) {
-        State state = new State(random.nextInt(10), random.nextInt(10));
-        playerStates.put(id, state);
-        server.sendTo(id, state.toString());
+    public synchronized void onPlayerConnected(String id) {
+        server.sendTo(id, currentState.toString());
     }
-    
+
     @Override
-    public void onPlayerSentMsg(String id, String msg) {
-        int result =  Integer.parseInt(msg);
-        if(result == playerStates.get(id).getA() + playerStates.get(id).getB()){
+    public synchronized void onPlayerSentMsg(String id, String msg) {
+        int result = Integer.parseInt(msg);
+        if (result == currentState.getResult()) {
             server.sendTo(id, "Right");
             server.broadcast(id + " won");
-            onPlayerConnected(id);
+            newRound();
         } else {
             server.sendTo(id, "Wrong");
         }

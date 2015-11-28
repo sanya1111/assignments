@@ -1,6 +1,5 @@
 package ru.spbau.mit;
 
-
 public class HelloWorldServer implements Server {
 
     @Override
@@ -11,10 +10,10 @@ public class HelloWorldServer implements Server {
                 synchronized (connection) {
                     connection.send("Hello world");
                     connection.close();
-                    
+
                 }
             }
         })).start();
     }
-    
+
 }
