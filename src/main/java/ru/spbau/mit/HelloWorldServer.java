@@ -4,7 +4,7 @@ public class HelloWorldServer implements Server {
 
     @Override
     public void accept(final Connection connection) {
-        (new Thread(new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 synchronized (connection) {
@@ -13,7 +13,7 @@ public class HelloWorldServer implements Server {
 
                 }
             }
-        })).start();
+        }).start();
     }
 
 }

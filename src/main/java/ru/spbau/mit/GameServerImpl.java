@@ -9,7 +9,7 @@ import java.util.Properties;
 
 public class GameServerImpl implements GameServer {
     private class ClientConnection implements Runnable {
-        private List<String> pendingMessages = Collections
+        private final List<String> pendingMessages = Collections
                 .synchronizedList(new ArrayList<String>());
 
         private final Connection connection;
@@ -34,19 +34,15 @@ public class GameServerImpl implements GameServer {
             }
         }
 
-        private void receive() {
+        private void receive() throws InterruptedException {
             synchronized (connection) {
                 if (connection.isClosed()) {
                     return;
                 }
-                try {
-                    String receivedMsg = connection
-                            .receive(DEFAULT_RECEIVE_TIMEOUT);
-                    if (receivedMsg != null) {
-                        plugin.onPlayerSentMsg(id, receivedMsg);
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                String receivedMsg = connection
+                        .receive(DEFAULT_RECEIVE_TIMEOUT);
+                if (receivedMsg != null) {
+                    plugin.onPlayerSentMsg(id, receivedMsg);
                 }
             }
         }
@@ -60,7 +56,12 @@ public class GameServerImpl implements GameServer {
             init();
             while (!connection.isClosed()) {
                 messagesOperations();
-                receive();
+                try{
+                    receive();
+                }catch(InterruptedException e){
+                    e.printStackTrace();
+                    return;
+                }
             }
         }
 
@@ -70,7 +71,7 @@ public class GameServerImpl implements GameServer {
     }
 
     private final Game plugin;
-    private List<ClientConnection> clientsPool = Collections
+    private final List<ClientConnection> clientsPool = Collections
             .synchronizedList(new ArrayList<ClientConnection>());
 
     private String getSetterName(String key) {
@@ -110,19 +111,19 @@ public class GameServerImpl implements GameServer {
         String id = String.valueOf(clientsPool.size());
         ClientConnection client = new ClientConnection(connection, id);
         clientsPool.add(client);
-        (new Thread(client)).start();
+        new Thread(client).start();
     }
 
     @Override
     public void broadcast(final String message) {
-        (new Thread(new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 for (int i = 0; i < clientsPool.size(); i++) {
                     sendTo(String.valueOf(i), message);
                 }
             }
-        })).start();
+        }).start();
     }
 
     @Override

@@ -5,7 +5,7 @@ import java.util.*;
 public class SumTwoNumbersGame implements Game {
 
     private class State {
-        private int a, b, result;
+        private final int a, b, result;
 
         public State(int a, int b) {
             super();

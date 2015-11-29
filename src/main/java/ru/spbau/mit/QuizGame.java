@@ -8,8 +8,8 @@ import java.util.*;
 
 public class QuizGame implements Game {
     private class QuizTask {
-        private String question;
-        private String answer;
+        private final String question;
+        private final String answer;
 
         public QuizTask(String question, String answer) {
             super();
@@ -41,6 +41,7 @@ public class QuizGame implements Game {
                     Thread.sleep(delayUntilNextLetter);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                    return;
                 }
                 if (over) {
                     return;
@@ -58,7 +59,7 @@ public class QuizGame implements Game {
         }
     }
 
-    private List<QuizTask> quiz = new ArrayList<QuizTask>();
+    private final List<QuizTask> quiz = new ArrayList<QuizTask>();
     private volatile int quizIndex = -1;
     private volatile int letterIndex = 0;
     private volatile State state = State.STOPPED;
@@ -97,11 +98,9 @@ public class QuizGame implements Game {
                     quiz.add(new QuizTask(kV[0], kV[1]));
                 }
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -169,7 +168,7 @@ public class QuizGame implements Game {
         letterIndex = 0;
         publishQuestion();
         hrunnable = new HintRunnable();
-        (new Thread(hrunnable)).start();
+        new Thread(hrunnable).start();
     }
 
     private synchronized void publishAnswer() {
