@@ -1,9 +1,7 @@
 package ru.spbau.mit;
 
 import org.junit.Test;
-
 import static org.junit.Assert.*;
-
 import java.util.*;
 
 
@@ -17,9 +15,7 @@ public class TestGameServer {
         Server server = createGameServer();
 
         List<TestConnection> connections = new ArrayList<TestConnection>();
-        int value = random.nextInt(100);
-//        int value = 0;
-        int size = 1 + value;
+        int size = 1 + random.nextInt(100);
         for (int i = 0; i < size; i++) {
             TestConnection connection = new TestConnection();
             connections.add(connection);
@@ -36,6 +32,7 @@ public class TestGameServer {
                 ids.add(c.id);
             }
         }
+
         assertEquals(size, ids.size());
     }
 
@@ -60,7 +57,7 @@ public class TestGameServer {
             assertEquals("TEST", c.lastMessage);
         }
     }
-//
+
     private static GameServer createGameServer() throws Exception {
         return (GameServer) TestUtil.createInitializedGameServer(
                 "TestGameServer$EmptyGame", new Properties());
@@ -79,7 +76,7 @@ public class TestGameServer {
         public void onPlayerSentMsg(String id, String message) {
         }
     }
-//
+
     private static class TestConnection extends AbstractConnection {
 
         public String id;
@@ -109,7 +106,6 @@ public class TestGameServer {
                 default:
                     lastMessage = message;
                     state = State.RECEIVED_MESSAGE;
-              
                     break;
             }
         }
