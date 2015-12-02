@@ -16,13 +16,19 @@ public class Injector {
      * `implementationClassNames` for concrete dependencies.
      */
     private static Object process(Class<?> rootClass, Set<Class<?> > parents, Map<Class<?>, Object> objects, Class<?>[] usedClasses) throws Exception {
-        if(parents.contains(rootClass)){
-            throw new InjectionCycleException();
-        }
+//        if(parents.contains(rootClass)){
+//            throw new InjectionCycleException();
+//        }
         if (objects.containsKey(rootClass)) {
-            return objects.get(rootClass);
+            Object obj = objects.get(rootClass);
+            if(obj == null){
+                throw new InjectionCycleException();
+            } else {
+                return obj;
+            }
         }
-
+        objects.put(rootClass, null);
+        
         Constructor<?> constructor = rootClass.getDeclaredConstructors()[0];
         ArrayList<Object> parametersList = new ArrayList<>();
         for (Class<?> parameterType : constructor.getParameterTypes()) {
