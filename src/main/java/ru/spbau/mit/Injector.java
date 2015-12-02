@@ -1,12 +1,10 @@
 package ru.spbau.mit;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 
 
 public class Injector {
@@ -67,13 +65,13 @@ public class Injector {
                 throw new ImplementationNotFoundException();
             }
             if(objects.containsKey(arg)){
-                throw new AmbiguousImplementationException();
+                throw new InjectionCycleException();
             }
             togo.add(implementationClassNames.get(with));
             implementationClassNames.remove(arg);
         }
         if(togo.size() != args.length){
-            throw new IOException();
+            throw new ImplementationNotFoundException();
         }
         List<Object> okey = new ArrayList<Object>();
         for(int i = 0; i < args.length; i++){
