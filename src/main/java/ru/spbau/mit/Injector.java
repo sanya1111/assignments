@@ -41,10 +41,20 @@ public class Injector {
     }
     
     public static Object process(Class<?> rootClassName, List<Class<?>> implementationClassNames, List<Class<?>> parent, Map<Class<?>, Object> objects) throws AmbiguousImplementationException, InjectionCycleException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ImplementationNotFoundException{
+        if(objects.containsKey(rootClassName)){
+            Object obj = objects.get(rootClassName);
+            if(obj == null){
+                throw new InjectionCycleException();
+            }
+            return obj;
+        }
         Class<?>[] args = getArgs(rootClassName);
         if(args == null){
-            return rootClassName.newInstance();
+            Object obj= rootClassName.newInstance();
+            objects.put(rootClassName, obj);
+            return obj;
         }
+        
         List<Class<?>> togo = new ArrayList<Class<?>>();
         for(Class<?> arg: args){
             Integer with = find(arg, implementationClassNames);
@@ -69,7 +79,9 @@ public class Injector {
             okey.add(process(togo.get(i), implementationClassNames, parent, objects));
             parent.remove(rootClassName);
         }
-        return rootClassName.getConstructors()[0].newInstance(okey.toArray());
+        Object obj = rootClassName.getConstructors()[0].newInstance(okey.toArray());
+        objects.put(rootClassName, obj);
+        return obj;
     }
     
     public static Object initialize(String rootClassName, List<String> implementationClassNames) throws Exception {
