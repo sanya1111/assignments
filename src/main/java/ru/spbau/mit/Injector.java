@@ -11,31 +11,32 @@ import java.util.Set;
 
 public class Injector {
 
+    private static final Map<Class<?>, Object> objects = new HashMap<Class<?>, Object>();
+    private static final Set<Class<?>> pendingToObjects = new HashSet<Class<?>>();
+    private static List<Class<?>> pendingClasses = new ArrayList<Class<?>>();
     /**
      * Create and initialize object of `rootClassName` class using classes from
      * `implementationClassNames` for concrete dependencies.
      */
-    private static Object process(Class<?> rootClass, Set<Class<?> > parents, Map<Class<?>, Object> objects, Class<?>[] usedClasses) throws Exception {
-//        if(parents.contains(rootClass)){
-//            throw new InjectionCycleException();
-//        }
-        if (objects.containsKey(rootClass)) {
-            Object obj = objects.get(rootClass);
-            if(obj == null){
-                throw new InjectionCycleException();
-            } else {
-                return obj;
-            }
+    private static Constructor<?> getConstructor(Class<?> clazz){
+        return clazz.getDeclaredConstructors()[0];
+    }
+    private static Object process(Class<?> rootClass) throws Exception {
+        if(pendingToObjects.contains(rootClass)){
+            throw new InjectionCycleException();
         }
-        objects.put(rootClass, null);
+        if (objects.containsKey(rootClass)) {
+            return objects.get(rootClass);
+        }
         
-        Constructor<?> constructor = rootClass.getDeclaredConstructors()[0];
-        ArrayList<Object> parametersList = new ArrayList<>();
-        for (Class<?> parameterType : constructor.getParameterTypes()) {
+        pendingToObjects.add(rootClass);
+        Constructor<?> constructor = getConstructor(rootClass);
+        List<Object> paramsObjects = new ArrayList<>();
+        for (Class<?> param : constructor.getParameterTypes()) {
             ArrayList<Class<?>> candidates = new ArrayList<>();
-            for (Class<?> curClass : usedClasses) {
-                if (parameterType.isAssignableFrom(curClass)) {
-                    candidates.add(curClass);
+            for (Class<?> headClass : pendingClasses) {
+                if (param.isAssignableFrom(headClass)) {
+                    candidates.add(headClass);
                 }
             }
             if (candidates.isEmpty()) {
@@ -44,24 +45,24 @@ public class Injector {
             if (candidates.size() > 1) {
                 throw new AmbiguousImplementationException();
             }
-            parametersList.add(process(candidates.get(0), parents, objects, usedClasses));
+            paramsObjects.add(process(candidates.get(0)));
         }
-
-        parents.add(rootClass);
-        Object newObject = constructor.newInstance(parametersList.toArray());
+        
+        
+        Object newObject = constructor.newInstance(paramsObjects.toArray());
         objects.put(rootClass, newObject);
+        pendingToObjects.remove(rootClass);
         return newObject;
     }
     
     public static Object initialize(String rootClassName, List<String> implementationClassNames) throws Exception {
-        HashMap<Class<?>, Object> objects = new HashMap<>();
-        Class<?>[] usedClasses = new Class<?>[implementationClassNames.size() + 1];
-        usedClasses[0] = Class.forName(rootClassName);
-        int i = 1;
+        objects.clear();
+        pendingToObjects.clear();
+        pendingClasses.clear();
         for (String implementationClassName : implementationClassNames) {
-            usedClasses[i++] = Class.forName(implementationClassName);
+            pendingClasses.add(Class.forName(implementationClassName));
         }
-        return process(Class.forName(rootClassName),  new HashSet<Class<?>>(), objects, usedClasses);
+        return process(Class.forName(rootClassName));
     }
 
 }
