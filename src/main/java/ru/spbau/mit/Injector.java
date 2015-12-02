@@ -26,14 +26,9 @@ public class Injector {
             throw new InjectionCycleException();
         }
         if (objects.containsKey(rootClass)) {
-            Object obj = objects.get(rootClass);
-            if(obj == null){
-                throw new InjectionCycleException();
-            }      
-            return obj;
+            return objects.get(rootClass);
         }
         
-        objects.put(rootClass, null);
         
         pendingToObjects.add(rootClass);
         Constructor<?> constructor = getConstructor(rootClass);
@@ -65,10 +60,12 @@ public class Injector {
         objects.clear();
         pendingToObjects.clear();
         pendingClasses.clear();
+        Class<?> rootClass = Class.forName(rootClassName);
+        pendingClasses.add(rootClass);
         for (String implementationClassName : implementationClassNames) {
             pendingClasses.add(Class.forName(implementationClassName));
         }
-        return process(Class.forName(rootClassName));
+        return process(rootClass);
     }
 
 }
