@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import javax.management.RuntimeErrorException;
+
 public class GameServerImpl implements GameServer {
     private class ClientConnection implements Runnable {
         private final List<String> pendingMessages = Collections
@@ -56,10 +58,9 @@ public class GameServerImpl implements GameServer {
             init();
             while (!connection.isClosed()) {
                 messagesOperations();
-                try{
+                try {
                     receive();
-                }catch(InterruptedException e){
-                    e.printStackTrace();
+                } catch (InterruptedException e) {
                     return;
                 }
             }

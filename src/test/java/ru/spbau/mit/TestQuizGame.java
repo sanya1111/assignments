@@ -25,7 +25,7 @@ public class TestQuizGame extends Assert {
     public void testSimpleFail() throws Exception {
         doBasicSingleConnectionTest(
                 ScriptItem.of("!start", "New round started: Who was the imaginary love of Don Quixote? (8 letters)"),
-                ScriptItem.of("Mar  ia", "Wrong try"),
+                ScriptItem.of("Maria", "Wrong try"),
                 ScriptItem.of(null, "Current prefix is D"),
                 ScriptItem.of("Otello", "Wrong try"),
                 ScriptItem.of(null, "Current prefix is Du"),
@@ -33,7 +33,7 @@ public class TestQuizGame extends Assert {
                 ScriptItem.of(null, "Nobody guessed, the word was Dulcinea")
         );
     }
-//
+
     @Test(timeout=10000)
     public void testSimpleStop() throws Exception {
         doBasicSingleConnectionTest(
@@ -144,9 +144,7 @@ public class TestQuizGame extends Assert {
                 return;
             }
 
-            if (isDone()) {
-                return;
-            }
+            if (isDone()) return;
             assertEquals(sequence.get(currentIndex).response, message);
 
             increaseIndex();
@@ -199,6 +197,7 @@ public class TestQuizGame extends Assert {
             currentIndex++;
             if (isDone()) {
                 close();
+
                 synchronized (this) {
                     notifyAll();
                 }
