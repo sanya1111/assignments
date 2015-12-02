@@ -57,15 +57,15 @@ public class Injector {
         
         List<Class<?>> togo = new ArrayList<Class<?>>();
         for(Class<?> arg: args){
+            if(objects.containsKey(arg)){
+                throw new InjectionCycleException();
+            }
             Integer with = find(arg, implementationClassNames);
             if(with == null){
                 if(find(arg, parent) != null){
                     throw new InjectionCycleException();
                 }
                 throw new ImplementationNotFoundException();
-            }
-            if(objects.containsKey(arg)){
-                throw new InjectionCycleException();
             }
             togo.add(implementationClassNames.get(with));
             implementationClassNames.remove(arg);
