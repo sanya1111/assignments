@@ -1,6 +1,6 @@
 package ru.spbau.mit;
 
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,84 +12,44 @@ public class Injector {
     /**
      * Create and initialize object of `rootClassName` class using classes from
      * `implementationClassNames` for concrete dependencies.
-     * @throws ClassNotFoundException 
-     * @throws SecurityException 
      */
-    public static Class<?>[] getArgs(Class<?> className){
-        if(className.getConstructors().length == 0){
-            return null;
+    private static Object process(Class<?> rootClass, Map<Class<?>, Object> objects, Class<?>[] usedClasses) throws Exception {
+        if (objects.containsKey(rootClass)) {
+            return objects.get(rootClass);
         }
-        return className.getConstructors()[0].getParameterTypes();
-    }
-    
-    static boolean isChild(Class<?> arg, Class<?> what){
-        return arg.isAssignableFrom(what);
-    }
-    
-    public static Integer  find(Class<?> arg, List<Class<?>> implementationClassNames) throws AmbiguousImplementationException{
-        Integer result = null;
-        for(int i = 0; i < implementationClassNames.size(); i++){
-            Class<?> item = implementationClassNames.get(i);
-            if(isChild(arg, item)){
-                if(result != null){
-                    throw new AmbiguousImplementationException();
+
+        Constructor<?> constructor = rootClass.getDeclaredConstructors()[0];
+        ArrayList<Object> parametersList = new ArrayList<>();
+        for (Class<?> parameterType : constructor.getParameterTypes()) {
+            ArrayList<Class<?>> candidates = new ArrayList<>();
+            for (Class<?> curClass : usedClasses) {
+                if (parameterType.isAssignableFrom(curClass)) {
+                    candidates.add(curClass);
                 }
-                result = i;
             }
-        }
-        return result;
-    }
-    
-    public static Object process(Class<?> rootClassName, List<Class<?>> implementationClassNames, List<Class<?>> parent, Map<Class<?>, Object> objects) throws AmbiguousImplementationException, InjectionCycleException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ImplementationNotFoundException{
-        if(objects.containsKey(rootClassName)){
-            Object obj = objects.get(rootClassName);
-            if(obj == null){
-                throw new InjectionCycleException();
-            }
-            return obj;
-        }
-        Class<?>[] args = getArgs(rootClassName);
-        if(args == null){
-            Object obj= rootClassName.newInstance();
-            objects.put(rootClassName, obj);
-            return obj;
-        }
-        
-        List<Class<?>> togo = new ArrayList<Class<?>>();
-        for(Class<?> arg: args){
-            if(objects.containsKey(arg)){
-                continue;
-            }
-            Integer with = find(arg, implementationClassNames);
-            if(with == null){
-                if(find(arg, parent) != null){
-                    throw new InjectionCycleException();
-                }
+            if (candidates.isEmpty()) {
                 throw new ImplementationNotFoundException();
             }
-            togo.add(implementationClassNames.get(with));
-            implementationClassNames.remove(arg);
+            if (candidates.size() > 1) {
+                throw new AmbiguousImplementationException();
+            }
+            parametersList.add(process(candidates.get(0), objects, usedClasses));
         }
-        if(togo.size() != args.length){
-            throw new ImplementationNotFoundException();
-        }
-        List<Object> list = new ArrayList<Object>();
-        for(int i = 0; i < args.length; i++){
-            parent.add(rootClassName);
-            process(togo.get(i), implementationClassNames, parent, objects);
-            list.add(objects.get(togo.get(i)));
-            parent.remove(rootClassName);
-        }
-        Object obj = rootClassName.getConstructors()[0].newInstance(list.toArray());
-        objects.put(rootClassName, obj);
-        return obj;
+
+        Object newObject = constructor.newInstance(parametersList.toArray());
+        objects.put(rootClass, newObject);
+        return newObject;
     }
     
     public static Object initialize(String rootClassName, List<String> implementationClassNames) throws Exception {
-        List<Class<?>> converted = new ArrayList<Class<?>>();
-        for(String name : implementationClassNames){
-            converted.add(Class.forName(name));
+        HashMap<Class<?>, Object> objects = new HashMap<>();
+        Class<?>[] usedClasses = new Class<?>[implementationClassNames.size() + 1];
+        usedClasses[0] = Class.forName(rootClassName);
+        int i = 1;
+        for (String implementationClassName : implementationClassNames) {
+            usedClasses[i++] = Class.forName(implementationClassName);
         }
-        return process(Class.forName(rootClassName), converted, new ArrayList<Class<?>>(), new HashMap<Class<?>, Object>());
+        return process(Class.forName(rootClassName), objects, usedClasses);
     }
+
 }
