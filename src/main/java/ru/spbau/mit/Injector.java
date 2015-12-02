@@ -15,13 +15,15 @@ public class Injector {
      * Create and initialize object of `rootClassName` class using classes from
      * `implementationClassNames` for concrete dependencies.
      */
-    private static Object process(Class<?> rootClass, Set<Class<?> > parents, Map<Class<?>, Object> objects, Object[] usedClasses) throws Exception {
-        if(parents.contains(rootClass)){
+    private static Object process(Class<?> rootClass,  Map<Class<?>, Object> objects, Object[] usedClasses) throws Exception {
+        if (objects.containsKey(rootClass)) {
+            Object obj = objects.get(rootClass);
+            if(obj != null){
+                return obj;
+            }
             throw new InjectionCycleException();
         }
-        if (objects.containsKey(rootClass)) {
-            return objects.get(rootClass);
-        }
+        
 
         Constructor<?> constructor = rootClass.getDeclaredConstructors()[0];
         ArrayList<Object> parametersList = new ArrayList<>();
@@ -39,12 +41,9 @@ public class Injector {
             if (candidates.size() > 1) {
                 throw new AmbiguousImplementationException();
             }
-            parametersList.add(process(candidates.get(0), parents, objects, usedClasses));
+            parametersList.add(process(candidates.get(0), objects, usedClasses));
         }
-
-        parents.add(rootClass);
         Object newObject = constructor.newInstance(parametersList.toArray());
-        parents.remove(rootClass);
         objects.put(rootClass, newObject);
         return newObject;
     }
@@ -56,7 +55,7 @@ public class Injector {
         for (String implementationClassName : implementationClassNames) {
             converted.add(Class.forName(implementationClassName));
         }
-        return process(Class.forName(rootClassName),  new HashSet<Class<?>>(), objects, converted.toArray());
+        return process(Class.forName(rootClassName),  objects, converted.toArray());
     }
 
 }
