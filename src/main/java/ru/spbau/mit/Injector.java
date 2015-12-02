@@ -58,7 +58,7 @@ public class Injector {
         List<Class<?>> togo = new ArrayList<Class<?>>();
         for(Class<?> arg: args){
             if(objects.containsKey(arg)){
-                throw new InjectionCycleException();
+                continue;
             }
             Integer with = find(arg, implementationClassNames);
             if(with == null){
@@ -73,13 +73,14 @@ public class Injector {
         if(togo.size() != args.length){
             throw new ImplementationNotFoundException();
         }
-        List<Object> okey = new ArrayList<Object>();
+        List<Object> list = new ArrayList<Object>();
         for(int i = 0; i < args.length; i++){
             parent.add(rootClassName);
-            okey.add(process(togo.get(i), implementationClassNames, parent, objects));
+            process(togo.get(i), implementationClassNames, parent, objects);
+            list.add(objects.get(togo.get(i)));
             parent.remove(rootClassName);
         }
-        Object obj = rootClassName.getConstructors()[0].newInstance(okey.toArray());
+        Object obj = rootClassName.getConstructors()[0].newInstance(list.toArray());
         objects.put(rootClassName, obj);
         return obj;
     }
