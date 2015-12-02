@@ -52,13 +52,16 @@ public class Injector {
                 if(find(arg, parent) != null){
                     throw new InjectionCycleException();
                 }
-                throw new AmbiguousImplementationException();
+                throw new ImplementationNotFoundException();
             }
             if(objects.containsKey(arg)){
                 throw new AmbiguousImplementationException();
             }
             togo.add(implementationClassNames.get(with));
             implementationClassNames.remove(arg);
+        }
+        if(togo.size() != args.length){
+            throw new ImplementationNotFoundException();
         }
         List<Object> okey = new ArrayList<Object>();
         for(int i = 0; i < args.length; i++){
