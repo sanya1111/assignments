@@ -26,8 +26,14 @@ public class Injector {
             throw new InjectionCycleException();
         }
         if (objects.containsKey(rootClass)) {
-            return objects.get(rootClass);
+            Object obj = objects.get(rootClass);
+            if(obj == null){
+                throw new InjectionCycleException();
+            }      
+            return obj;
         }
+        
+        objects.put(rootClass, null);
         
         pendingToObjects.add(rootClass);
         Constructor<?> constructor = getConstructor(rootClass);
